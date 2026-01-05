@@ -1,0 +1,41 @@
+import api from '@/lib/api';
+
+export interface Form {
+  _id: string;
+  id?: string;
+  title: string;
+  description?: string;
+  fields?: any[];
+  agents?: string[];
+  assignedAgents?: string[];
+  isPublic?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export const formService = {
+  getForms: async (): Promise<Form[]> => {
+    const response = await api.get('/forms');
+    return response.data.data;
+  },
+
+  getForm: async (id: string): Promise<Form> => {
+    const response = await api.get(`/forms/${id}`);
+    return response.data.data;
+  },
+
+  createForm: async (formData: Partial<Form>): Promise<Form> => {
+    const response = await api.post('/forms', formData);
+    return response.data.data;
+  },
+
+  updateForm: async (id: string, formData: Partial<Form>): Promise<Form> => {
+    const response = await api.put(`/forms/${id}`, formData);
+    return response.data.data;
+  },
+
+  deleteForm: async (id: string): Promise<void> => {
+    await api.delete(`/forms/${id}`);
+  },
+};
+
