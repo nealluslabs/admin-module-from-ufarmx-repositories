@@ -37,5 +37,34 @@ export const formService = {
   deleteForm: async (id: string): Promise<void> => {
     await api.delete(`/forms/${id}`);
   },
+
+  downloadFormResponseFormat: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/form/${id}/download-input-csv`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  exportFormResponses: async (id: string): Promise<Blob> => {
+    const response = await api.get(`/form/${id}/export-responses`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  exportSelectedFormResponses: async (id: string, responseIds: string[]): Promise<Blob> => {
+    const response = await api.post(`/forms/${id}/export-selected`, { responses: responseIds }, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  uploadFormResponses: async (id: string, formData: FormData): Promise<void> => {
+    await api.post(`/form/${id}/upload-responses`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
 };
 

@@ -6,6 +6,11 @@ import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Forms from '@/pages/Forms';
 import AddForm from '@/pages/AddForm';
+import FormDetail from '@/pages/FormDetail';
+import Agents from '@/pages/Agents';
+import AddAgent from '@/pages/AddAgent';
+import Responses from '@/pages/Responses';
+import ResponseDetail from '@/pages/ResponseDetail';
 import { ROUTES } from '@/utils/routes';
 import './App.css';
 
@@ -41,6 +46,54 @@ function App() {
           element={
             <ProtectedLayout>
               <AddForm />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.FORM_DETAIL}
+          element={
+            <ProtectedLayout>
+              <FormDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.AGENTS}
+          element={
+            <ProtectedLayout>
+              <Agents />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ADD_AGENT}
+          element={
+            <ProtectedLayout>
+              <AddAgent />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path="/agent/edit/:id"
+          element={
+            <ProtectedLayout>
+              <AddAgent />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RESPONSES}
+          element={
+            <ProtectedLayout>
+              <Responses />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RESPONSE_DETAIL}
+          element={
+            <ProtectedLayout>
+              <ResponseDetail />
             </ProtectedLayout>
           }
         />
