@@ -3,15 +3,24 @@ import { NumberInput } from './inputfields/NumberInput';
 import { RadioButtons } from './inputfields/RadioButtons';
 import { CheckBoxInput } from './inputfields/CheckBoxInput';
 
-interface FieldConfig {
+interface BaseFieldConfig {
   name: string;
   prompt: string;
-  key: string;
+  key?: string;
   type?: string;
-  options?: Array<{ key: string; value: string }>;
   required?: boolean;
   placeholder?: string;
 }
+
+interface TextFieldConfig extends BaseFieldConfig {
+  options?: never;
+}
+
+interface OptionsFieldConfig extends BaseFieldConfig {
+  options: Array<{ key: string; value: string }>;
+}
+
+type FieldConfig = TextFieldConfig | OptionsFieldConfig;
 
 interface FormikControlProps {
   type: string;
@@ -29,9 +38,9 @@ export function FormikControl({ type, field }: FormikControlProps) {
     case 'number':
       return <NumberInput field={field} />;
     case 'radio':
-      return <RadioButtons field={field} />;
+      return <RadioButtons field={field as OptionsFieldConfig} />;
     case 'checkbox':
-      return <CheckBoxInput field={field} />;
+      return <CheckBoxInput field={field as OptionsFieldConfig} />;
     default:
       return null;
   }

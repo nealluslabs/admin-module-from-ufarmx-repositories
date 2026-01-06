@@ -16,6 +16,8 @@ export interface Admin {
   };
   location?: string;
   isActive?: boolean;
+  isSuperAdmin?: boolean;
+  role?: string;
 }
 
 export const adminService = {
@@ -93,6 +95,25 @@ export const adminService = {
       await api.delete(`/admins/${id}`);
     } catch (error: any) {
       console.error('Error deleting admin:', error);
+      throw error;
+    }
+  },
+
+  deleteAdminUser: async (userId: string): Promise<void> => {
+    try {
+      await api.post('/auth/delete-user', { user: userId });
+    } catch (error: any) {
+      console.error('Error deleting admin user:', error);
+      throw error;
+    }
+  },
+
+  createSuperAdmin: async (data: Partial<Admin>): Promise<Admin> => {
+    try {
+      const response = await api.post('/admins/create-super-admin', data);
+      return response.data.data;
+    } catch (error: any) {
+      console.error('Error creating super admin:', error);
       throw error;
     }
   },

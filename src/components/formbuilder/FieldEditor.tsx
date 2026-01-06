@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

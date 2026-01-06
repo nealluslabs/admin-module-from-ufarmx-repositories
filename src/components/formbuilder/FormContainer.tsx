@@ -59,7 +59,7 @@ export function FormContainer({
       onSubmit={handleSubmit}
       enableReinitialize={enableReinitialize}
     >
-      {(formik) => (
+      {() => (
         <Form>
           {fields.map(
             (field) =>

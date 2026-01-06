@@ -106,7 +106,7 @@ export default function ResponseDetail() {
             // BUT `analyzeResponse` controller:
             // `const { newChat = false, message } = req.body;`
             // So I should send `message`.
-            const res = await responseService.analyzeResponse(id, { newChat: false, message });
+            const res = await responseService.analyzeResponse(id, message, false);
             setAnalysis(res);
         } catch (error) {
             console.error(error);

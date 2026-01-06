@@ -187,7 +187,15 @@ export default function Dashboard() {
     }
   };
 
-  const statCards = [
+  const statCards: Array<{
+    title: string;
+    value: number;
+    description: string;
+    icon: React.ForwardRefExoticComponent<any>;
+    color: string;
+    bgColor: string;
+    route: string;
+  }> = [
     {
       title: 'Total Forms',
       value: stats.totalForms,

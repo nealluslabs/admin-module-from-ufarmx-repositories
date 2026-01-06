@@ -53,8 +53,8 @@ export const responseService = {
     await api.delete(`/responses/${id}/delete-response`);
   },
 
-  analyzeResponse: async (id: string, newChat: boolean = false): Promise<any> => {
-    const response = await api.post(`/responses/${id}/analyse`, { newChat });
+  analyzeResponse: async (id: string, message: string, newChat: boolean = false): Promise<any> => {
+    const response = await api.post(`/responses/${id}/analyse`, { message, newChat });
     return response.data.data;
   },
 

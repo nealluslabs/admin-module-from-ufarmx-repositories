@@ -15,10 +15,8 @@ import { Loader2 } from 'lucide-react';
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean().default(false),
+  rememberMe: z.boolean().optional().default(false),
 });
-
-type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -33,7 +31,7 @@ export default function Login() {
     formState: { errors },
     setValue,
     watch,
-  } = useForm<LoginFormData>({
+  } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: rememberedEmail || '',
@@ -55,7 +53,7 @@ export default function Login() {
     return null;
   }
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: any) => {
     setError('');
     try {
       await login(data.email, data.password);

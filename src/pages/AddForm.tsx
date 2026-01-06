@@ -12,7 +12,6 @@ import { formService } from '@/services/form.service';
 import { ROUTES } from '@/utils/routes';
 import toast from 'react-hot-toast';
 import type { FormData, FormField } from '@/types/form';
-import { v4 as uuidv4 } from 'uuid';
 
 export default function AddForm() {
   const navigate = useNavigate();
@@ -144,7 +143,7 @@ export default function AddForm() {
         toast.success('Form updated successfully');
         navigate(ROUTES.FORM_DETAIL.replace(':id', formData._id));
       } else {
-        const newForm = await formService.createForm(formPayload);
+        await formService.createForm(formPayload);
         toast.success('Form created successfully');
         navigate(ROUTES.FORMS);
       }
@@ -155,7 +154,7 @@ export default function AddForm() {
 
   const handleGenerate = () => {
     // TODO: Implement AI form generation
-    toast.info('AI form generation coming soon');
+    toast('AI form generation coming soon', { icon: 'ℹ️' });
   };
 
   return (
@@ -287,7 +286,7 @@ export default function AddForm() {
                   <p className="text-sm">Add fields to see the preview</p>
                 </div>
               ) : (
-                <FormContainer fields={formFields.filter((f) => f.name && f.prompt)} />
+                <FormContainer fields={formFields.filter((f): f is FormField & { name: string; prompt: string } => !!f.name && !!f.prompt)} />
               )}
             </CardContent>
           </Card>

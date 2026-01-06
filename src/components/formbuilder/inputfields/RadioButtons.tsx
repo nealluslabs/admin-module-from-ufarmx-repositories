@@ -2,7 +2,6 @@ import { Field } from 'formik';
 import { InputContainer } from '../InputContainer';
 import { InputLabel } from '../InputLabel';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
 
 interface Option {
   key: string;
