@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { HiOutlineClipboardDocumentList, HiArrowDownTray } from 'react-icons/hi2';
 import { responseService, type FormResponse } from '@/services/response.service';
 import { agentService, type Agent } from '@/services/agent.service';
@@ -12,14 +12,18 @@ import toast from 'react-hot-toast';
 
 export default function Responses() {
     const navigate = useNavigate();
+    const location = useLocation();
     const [responses, setResponses] = useState<FormResponse[]>([]);
     const [agents, setAgents] = useState<Agent[]>([]);
     const [forms, setForms] = useState<Form[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // Get formId from navigation state if present
+    const initialFormId = (location.state as { formId?: string })?.formId || null;
+
     // Filters
     const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-    const [selectedFormId, setSelectedFormId] = useState<string | null>(null);
+    const [selectedFormId, setSelectedFormId] = useState<string | null>(initialFormId);
 
     // Multi-select & Export
     const [isSelecting, setIsSelecting] = useState(false);

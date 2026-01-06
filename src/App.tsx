@@ -11,6 +11,12 @@ import Agents from '@/pages/Agents';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
 import ResponseDetail from '@/pages/ResponseDetail';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
+import ChangePassword from '@/pages/ChangePassword';
+import Maps from '@/pages/Maps';
+import Admins from "@/pages/Admins";
+import AddAdmin from "@/pages/AddAdmin";
 import { ROUTES } from '@/utils/routes';
 import './App.css';
 
@@ -25,6 +31,17 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Protected Routes */}
+        <Route
+          path={ROUTES.CHANGE_PASSWORD}
+          element={
+            <ProtectedLayout>
+              <ChangePassword />
+            </ProtectedLayout>
+          }
+        />
         <Route
           path={ROUTES.DASHBOARD}
           element={
@@ -82,6 +99,30 @@ function App() {
           }
         />
         <Route
+          path={ROUTES.ADMINS}
+          element={
+            <ProtectedLayout>
+              <Admins />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.ADD_ADMIN}
+          element={
+            <ProtectedLayout>
+              <AddAdmin />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path="/admin/edit/:id"
+          element={
+            <ProtectedLayout>
+              <AddAdmin />
+            </ProtectedLayout>
+          }
+        />
+        <Route
           path={ROUTES.RESPONSES}
           element={
             <ProtectedLayout>
@@ -94,6 +135,14 @@ function App() {
           element={
             <ProtectedLayout>
               <ResponseDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.MAPS}
+          element={
+            <ProtectedLayout>
+              <Maps />
             </ProtectedLayout>
           }
         />
