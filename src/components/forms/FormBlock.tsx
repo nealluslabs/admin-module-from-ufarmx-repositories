@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { FiEdit } from 'react-icons/fi';
+import { FiEdit, FiCopy } from 'react-icons/fi';
 import { AiOutlineFolderView, AiOutlineEye, AiOutlineDelete } from 'react-icons/ai';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES } from '@/utils/routes';
@@ -32,6 +32,12 @@ export function FormBlock({ form, onDelete }: FormBlockProps) {
     });
   };
 
+  const handleDuplicateForm = () => {
+    navigate(ROUTES.ADD_FORM, {
+      state: { form, isDuplicate: true },
+    });
+  };
+
   const handleViewResponses = () => {
     navigate(ROUTES.RESPONSES, {
       state: { formId },
@@ -48,6 +54,11 @@ export function FormBlock({ form, onDelete }: FormBlockProps) {
       icon: <FiEdit className="w-5 h-5" />,
       label: 'Edit Form',
       onClick: handleEditForm,
+    },
+    {
+      icon: <FiCopy className="w-5 h-5" />,
+      label: 'Duplicate Form',
+      onClick: handleDuplicateForm,
     },
     {
       icon: <AiOutlineFolderView className="w-5 h-5" />,
