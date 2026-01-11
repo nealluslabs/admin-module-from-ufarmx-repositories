@@ -30,13 +30,15 @@ export default function AddForm() {
   useEffect(() => {
     if (location.state?.form) {
       const form = location.state.form;
-      setIsUpdating(true);
+      const isDuplicate = location.state?.isDuplicate;
+      
+      setIsUpdating(!isDuplicate);
       setFormFields(form.fields || []);
       setSelectedAgents(form.agents || []);
       setFormData({
-        _id: form._id || form.id,
-        id: form.id || form._id,
-        title: form.title,
+        _id: isDuplicate ? undefined : (form._id || form.id),
+        id: isDuplicate ? undefined : (form.id || form._id),
+        title: isDuplicate ? `${form.title} (Copy)` : form.title,
         description: form.description || '',
         isPublic: form.isPublic || false,
         fields: form.fields || [],
