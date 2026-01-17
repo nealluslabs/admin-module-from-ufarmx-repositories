@@ -40,23 +40,6 @@ export function FormBuilderToolbar({
     setIsOpen(false);
   };
 
-  if (isUpdating) {
-    return (
-      <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-          <p className="italic">
-            Form has responses. You can only edit existing fields, not add new ones.
-          </p>
-        </div>
-        <Button onClick={onSave}>
-          <Save className="w-4 h-4 mr-2" />
-          Update Form
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg border">
       <div className="flex items-center gap-3">
@@ -85,7 +68,7 @@ export function FormBuilderToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {onGenerate && (
+        {onGenerate && !isUpdating && (
           <Button variant="outline" onClick={onGenerate}>
             <Sparkles className="w-4 h-4 mr-2" />
             Generate Form
@@ -95,7 +78,7 @@ export function FormBuilderToolbar({
 
       <Button onClick={onSave}>
         <Save className="w-4 h-4 mr-2" />
-        Save Form
+        {isUpdating ? 'Update Form' : 'Save Form'}
       </Button>
     </div>
   );

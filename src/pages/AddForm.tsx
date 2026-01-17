@@ -19,15 +19,29 @@ export default function AddForm() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [formFields, setFormFields] = useState<FormField[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [farmerRequiredFields, setFarmerRequiredFields] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState<FormData>({
     title: `Form ${Math.floor(Math.random() * 3000000)}`,
     description: '',
     isPublic: false,
+    isFarmerForm: false,
     fields: [],
     agents: [],
   });
 
   useEffect(() => {
+    // Fetch required fields for farmer form validation
+    const fetchRequiredFields = async () => {
+      try {
+        const fields = await formService.getFarmerFormRequiredFields();
+        setFarmerRequiredFields(fields);
+      } catch (error) {
+        console.error('Failed to fetch required fields:', error);
+      }
+    };
+    fetchRequiredFields();
+
     if (location.state?.form) {
       const form = location.state.form;
       const isDuplicate = location.state?.isDuplicate;
@@ -41,6 +55,7 @@ export default function AddForm() {
         title: isDuplicate ? `${form.title} (Copy)` : form.title,
         description: form.description || '',
         isPublic: form.isPublic || false,
+        isFarmerForm: form.isFarmerForm || false,
         fields: form.fields || [],
         agents: form.agents || [],
       });
@@ -53,7 +68,18 @@ export default function AddForm() {
       fields: formFields.filter((f) => f.name && f.prompt),
       agents: selectedAgents,
     }));
-  }, [formFields, selectedAgents]);
+
+    // Re-validate farmer form when fields change
+    if (formData.isFarmerForm && farmerRequiredFields.length > 0) {
+      const formFieldNames = formFields
+        .filter((f) => f.name && f.prompt)
+        .map((f) => f.name!);
+      const missingFields = farmerRequiredFields.filter(
+        (requiredField) => !formFieldNames.includes(requiredField)
+      );
+      setValidationErrors(missingFields);
+    }
+  }, [formFields, selectedAgents, formData.isFarmerForm, farmerRequiredFields]);
 
   const handleAddField = (field: FormField) => {
     setFormFields([...formFields, field]);
@@ -80,6 +106,8 @@ export default function AddForm() {
   };
 
   const validateForm = (): boolean => {
+    setValidationErrors([]);
+
     if (!formData.title || formData.title.trim() === '') {
       toast.error('Please enter a form title');
       return false;
@@ -116,6 +144,24 @@ export default function AddForm() {
       }
     }
 
+    // Validate farmer form required fields
+    if (formData.isFarmerForm) {
+      const formFieldNames = formData.fields
+        .filter((f) => f.name)
+        .map((f) => f.name!);
+      
+      const missingFields = farmerRequiredFields.filter(
+        (requiredField) => !formFieldNames.includes(requiredField)
+      );
+
+      if (missingFields.length > 0) {
+        const errorMessage = `Farmer form is missing required fields: ${missingFields.join(', ')}`;
+        setValidationErrors(missingFields);
+        toast.error(errorMessage, { duration: 5000 });
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -128,6 +174,7 @@ export default function AddForm() {
         title: formData.title,
         description: formData.description,
         isPublic: formData.isPublic || false,
+        isFarmerForm: formData.isFarmerForm || false,
         fields: formData.fields.map((field) => ({
           id: field.id,
           key: field.key,
@@ -150,7 +197,20 @@ export default function AddForm() {
         navigate(ROUTES.FORMS);
       }
     } catch (error: any) {
-      toast.error(error?.message || 'Failed to save form');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to save form';
+      
+      // Check if error contains missing fields information
+      if (errorMessage.includes('missing required fields')) {
+        // Extract missing fields from error message
+        const match = errorMessage.match(/missing required fields: (.+)/i);
+        if (match) {
+          const missingFields = match[1].split(',').map((f: string) => f.trim());
+          setValidationErrors(missingFields);
+        }
+        toast.error(errorMessage, { duration: 6000 });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -177,7 +237,7 @@ export default function AddForm() {
         onSave={handleSave}
         onGenerate={handleGenerate}
         isUpdating={isUpdating}
-        canAddFields={!isUpdating}
+        canAddFields={true}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -228,6 +288,49 @@ export default function AddForm() {
                 />
               </div>
 
+              <div className="flex items-center justify-between pt-2 border-t">
+                <div className="space-y-0.5">
+                  <Label htmlFor="isFarmerForm">Farmer Creation Form</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Mark this as the form used for creating farmers. Only one form can have this enabled.
+                  </p>
+                  {formData.isFarmerForm && validationErrors.length > 0 && (
+                    <div className="mt-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                      <p className="text-sm font-medium text-destructive mb-1">
+                        Missing Required Fields:
+                      </p>
+                      <ul className="text-xs text-destructive/80 list-disc list-inside space-y-1">
+                        {validationErrors.map((field, index) => (
+                          <li key={index}>{field}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <Switch
+                  id="isFarmerForm"
+                  checked={formData.isFarmerForm || false}
+                  onCheckedChange={(checked) => {
+                    setFormData({ ...formData, isFarmerForm: checked });
+                    setValidationErrors([]);
+                    // Re-validate when toggling
+                    if (checked) {
+                      setTimeout(() => {
+                        const formFieldNames = formData.fields
+                          .filter((f) => f.name)
+                          .map((f) => f.name!);
+                        const missingFields = farmerRequiredFields.filter(
+                          (requiredField) => !formFieldNames.includes(requiredField)
+                        );
+                        if (missingFields.length > 0) {
+                          setValidationErrors(missingFields);
+                        }
+                      }, 100);
+                    }
+                  }}
+                />
+              </div>
+
               <div className="space-y-2 pt-2 border-t">
                 <Label>Assign to Agents</Label>
                 <AgentFilter
@@ -266,7 +369,8 @@ export default function AddForm() {
                           : undefined
                       }
                       canDelete={!isUpdating}
-                      canEdit={!isUpdating}
+                      canEdit={true}
+                      isUpdating={isUpdating}
                     />
                   ))}
                 </div>
