@@ -18,6 +18,7 @@ export interface FormData {
   title: string;
   description?: string;
   isPublic?: boolean;
+  isFarmerForm?: boolean;
   fields: FormField[];
   agents?: string[];
   createdAt?: string;

@@ -66,5 +66,10 @@ export const formService = {
       },
     });
   },
+
+  getFarmerFormRequiredFields: async (): Promise<string[]> => {
+    const response = await api.get('/form-config/farmer-required-fields');
+    return response.data.data.requiredFields;
+  },
 };
 

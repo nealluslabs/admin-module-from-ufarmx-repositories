@@ -18,6 +18,7 @@ interface FieldEditorProps {
   onMoveDown?: () => void;
   canDelete?: boolean;
   canEdit?: boolean;
+  isUpdating?: boolean;
 }
 
 export function FieldEditor({
@@ -29,6 +30,7 @@ export function FieldEditor({
   onMoveDown,
   canDelete = true,
   canEdit = true,
+  isUpdating = false,
 }: FieldEditorProps) {
   const [isExpanded, setIsExpanded] = useState(field.isExpanded ?? true);
 
@@ -46,8 +48,8 @@ export function FieldEditor({
   const handlePromptChange = (value: string) => {
     const updates: Partial<FormField> = { prompt: value || undefined };
     
-    // Auto-generate field name from prompt if not in edit mode
-    if (canEdit && value) {
+    // Auto-generate field name from prompt only when creating new form (not updating)
+    if (canEdit && !isUpdating && value) {
       updates.name = transformName(value);
     }
     
@@ -147,10 +149,12 @@ export function FieldEditor({
               value={field.name || ''}
               onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Auto-generated from prompt"
-              disabled={!canEdit}
+              disabled={!canEdit || isUpdating}
             />
             <p className="text-xs text-muted-foreground">
-              Used as the field identifier. Auto-generated from prompt.
+              {isUpdating 
+                ? 'Field name cannot be changed when editing a form'
+                : 'Used as the field identifier. Auto-generated from prompt.'}
             </p>
           </div>
 
@@ -158,7 +162,7 @@ export function FieldEditor({
             <OptionsEditor
               field={field}
               onUpdate={updateField}
-              disabled={!canEdit}
+              disabled={!canEdit || isUpdating}
             />
           )}
 
@@ -198,7 +202,7 @@ export function FieldEditor({
                       },
                     })
                   }
-                  disabled={!canEdit}
+                  disabled={!canEdit || isUpdating}
                 />
                 <Label
                   htmlFor={`readonly-${field.id}`}
