@@ -8,6 +8,8 @@ import Forms from '@/pages/Forms';
 import AddForm from '@/pages/AddForm';
 import FormDetail from '@/pages/FormDetail';
 import Agents from '@/pages/Agents';
+import Retailers from '@/pages/Retailers';
+import RetailerDetail from '@/pages/RetailerDetail';
 import Farmers from '@/pages/Farmers';
 import FarmerDetail from '@/pages/FarmerDetail';
 import CreditScoreCalculators from '@/pages/CreditScoreCalculators';
@@ -82,6 +84,22 @@ function App() {
           element={
             <ProtectedLayout>
               <Agents />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RETAILERS}
+          element={
+            <ProtectedLayout>
+              <Retailers />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RETAILER_DETAIL}
+          element={
+            <ProtectedLayout>
+              <RetailerDetail />
             </ProtectedLayout>
           }
         />

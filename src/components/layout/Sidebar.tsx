@@ -8,6 +8,7 @@ import {
   HiOutlineShieldCheck,
   HiOutlineUserCircle,
   HiOutlineUserGroup,
+  HiOutlineBuildingStorefront,
 } from 'react-icons/hi2';
 import { FaWpforms } from 'react-icons/fa';
 import { FiTrendingUp } from 'react-icons/fi';
@@ -53,6 +54,12 @@ export function Sidebar() {
       url: ROUTES.AGENTS,
       icon: <HiOutlineUserCircle className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.AGENTS,
+    },
+    {
+      title: 'Retailers',
+      url: ROUTES.RETAILERS,
+      icon: <HiOutlineBuildingStorefront className="w-5 h-5" />,
+      routeGroup: ROUTES_GROUP.RETAILERS,
     },
     {
       title: 'Farmers',

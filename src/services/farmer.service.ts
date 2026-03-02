@@ -2,6 +2,7 @@ import api from '@/lib/api';
 
 export interface Farmer {
   _id: string;
+  createdAt?: string;
   farmerId?: string;
   firstName?: string;
   lastName?: string;
@@ -60,6 +61,7 @@ const toAge = (farmer: Farmer): string => {
 export interface FarmerListItem {
   id: string;
   farmerId: string;
+  createdAt: string;
   name: string;
   age: string;
   cropType: string;
@@ -223,6 +225,7 @@ export const farmerService = {
       farmers: farmers.map((farmer) => ({
         id: farmer._id,
         farmerId: farmer.farmerId || 'Farmer ID',
+        createdAt: farmer.createdAt || '',
         name: toDisplayName(farmer),
         age: toAge(farmer),
         cropType: toCropType(farmer),
