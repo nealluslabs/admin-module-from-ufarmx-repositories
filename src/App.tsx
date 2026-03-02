@@ -8,6 +8,7 @@ import Forms from '@/pages/Forms';
 import AddForm from '@/pages/AddForm';
 import FormDetail from '@/pages/FormDetail';
 import Agents from '@/pages/Agents';
+import Farmers from '@/pages/Farmers';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
 import ResponseDetail from '@/pages/ResponseDetail';
@@ -79,6 +80,14 @@ function App() {
           element={
             <ProtectedLayout>
               <Agents />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.FARMERS}
+          element={
+            <ProtectedLayout>
+              <Farmers />
             </ProtectedLayout>
           }
         />

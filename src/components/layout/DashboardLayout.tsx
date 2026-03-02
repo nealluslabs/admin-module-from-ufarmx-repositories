@@ -26,7 +26,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <MobileSidebar open={mobileMenuOpen} onOpenChange={setMobileMenuOpen} />
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-background p-6">
+        <main className="flex-1 overflow-y-auto bg-[#F2F4F7] p-6">
           {children}
         </main>
       </div>

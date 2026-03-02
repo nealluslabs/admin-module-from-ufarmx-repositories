@@ -8,6 +8,7 @@ export const ROUTES = {
   ADD_FORM: '/form/create',
   FORM_DETAIL: '/form/:id',
   AGENTS: '/agents',
+  FARMERS: '/farmers',
   ADD_AGENT: '/agent/create',
   ADMINS: '/admins',
   ADD_ADMIN: '/admin/create',
@@ -19,8 +20,8 @@ export const ROUTES = {
 export const ROUTES_GROUP = {
   FORMS: [ROUTES.FORMS, ROUTES.ADD_FORM, ROUTES.RESPONSE_DETAIL, ROUTES.FORM_DETAIL],
   AGENTS: [ROUTES.AGENTS, ROUTES.ADD_AGENT],
+  FARMERS: [ROUTES.FARMERS],
   ADMINS: [ROUTES.ADMINS, ROUTES.ADD_ADMIN],
 } as const;
 
 export default ROUTES;
-

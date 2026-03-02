@@ -52,6 +52,12 @@ export function Sidebar() {
       routeGroup: ROUTES_GROUP.AGENTS,
     },
     {
+      title: 'Farmers',
+      url: ROUTES.FARMERS,
+      icon: <FiUsers className="w-5 h-5" />,
+      routeGroup: ROUTES_GROUP.FARMERS,
+    },
+    {
       title: 'Responses',
       url: ROUTES.RESPONSES,
       icon: <HiOutlineClipboardDocumentList className="w-5 h-5" />,
@@ -126,4 +132,3 @@ export function Sidebar() {
     </div>
   );
 }
-
