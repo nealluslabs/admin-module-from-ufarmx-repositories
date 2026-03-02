@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Inbox } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Input } from '@/components/ui/input';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { requestService, type RequestListItem } from '@/services/request.service';
+import { ROUTES } from '@/utils/routes';
 
 export default function RequestsPage() {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<RequestListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,7 +80,7 @@ export default function RequestsPage() {
           <div className="flex-1 px-4">
             <span className="text-base leading-4 text-[#392751]">Farmer</span>
           </div>
-          <div className="w-[120px] shrink-0 px-4">
+          <div className="w-[140px] shrink-0 px-4">
             <span className="text-base leading-4 text-[#392751]">Status</span>
           </div>
           <div className="flex-1 px-4">
@@ -85,6 +88,9 @@ export default function RequestsPage() {
           </div>
           <div className="flex-1 px-4">
             <span className="text-base leading-4 text-[#392751]">Date</span>
+          </div>
+          <div className="w-[80px] shrink-0 px-4 text-right">
+            <span className="text-base leading-4 text-[#392751]">View</span>
           </div>
         </div>
 
@@ -120,9 +126,9 @@ export default function RequestsPage() {
                 <div className="flex-1 px-4">
                   <p className="truncate text-base leading-4 text-[#392751]">{request.farmerName}</p>
                 </div>
-                <div className="w-[120px] shrink-0 px-4">
+                <div className="w-[140px] shrink-0 px-4">
                   <span className="inline-flex rounded-full bg-[#F2F4F7] px-2 py-1 text-xs font-medium text-[#667085] capitalize">
-                    {request.status}
+                    {request.status.replaceAll('_', ' ')}
                   </span>
                 </div>
                 <div className="flex-1 px-4">
@@ -132,6 +138,15 @@ export default function RequestsPage() {
                   <p className="truncate text-base leading-4 text-[#392751]">
                     {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}
                   </p>
+                </div>
+                <div className="w-[80px] shrink-0 px-4 text-right">
+                  <button
+                    type="button"
+                    className="text-base font-normal leading-4 text-[#90C434] hover:underline"
+                    onClick={() => navigate(ROUTES.REQUEST_DETAIL.replace(':id', request.id))}
+                  >
+                    View
+                  </button>
                 </div>
               </div>
             ))
@@ -156,3 +171,4 @@ export default function RequestsPage() {
     </div>
   );
 }
+

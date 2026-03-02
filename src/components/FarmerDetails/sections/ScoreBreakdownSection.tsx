@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { BarChart3, Clock, Eye, ShieldCheck, TrendingUp } from 'lucide-react';
 import { type FarmerDetail } from '@/services/farmer.service';
 import { type FarmerCreditScoreEvent } from '@/services/credit-score.service';
+import { deriveCreditCategory, getCreditCategoryPalette, normalizeScore } from '@/utils/credit-score';
 import {
   Dialog,
   DialogContent,
@@ -17,25 +18,6 @@ interface Props {
   onRecalculate: () => void;
   isRecalculating: boolean;
 }
-
-const getCreditColors = (category: string): { scoreColor: string; bgColor: string; textColor: string; label: string } => {
-  const cat = category.toLowerCase();
-  if (cat === 'good' || cat === 'high' || cat === 'excellent') {
-    return { scoreColor: '#059669', bgColor: '#D1FAE5', textColor: '#065F46', label: 'Good Standing' };
-  }
-  if (cat === 'medium' || cat === 'average' || cat === 'fair') {
-    return { scoreColor: '#df8506', bgColor: '#ffe0b8', textColor: '#df8506', label: 'Average Standing' };
-  }
-  if (cat === 'low' || cat === 'poor' || cat === 'bad') {
-    return { scoreColor: '#d92d20', bgColor: '#FEE4E2', textColor: '#d92d20', label: 'Needs Attention' };
-  }
-  return { scoreColor: '#df8506', bgColor: '#ffe0b8', textColor: '#df8506', label: 'Not Rated' };
-};
-
-const scoreNum = (val: string): number => {
-  const n = parseFloat(val);
-  return Number.isFinite(n) ? Math.min(10, Math.max(0, n)) : 0;
-};
 
 const formatReason = (reason: string): string =>
   reason
@@ -93,15 +75,12 @@ export function ScoreBreakdownSection({
 
   const history = useMemo(() => scoreHistory || [], [scoreHistory]);
 
-  const category = latestScore
-    ? latestScore.total_score >= 7
-      ? 'Good'
-      : latestScore.total_score >= 4
-        ? 'Medium'
-        : 'Low'
-    : 'N/A';
-  const c = getCreditColors(category);
-  const score = scoreNum(latestScore ? String(latestScore.total_score) : '0');
+  const score = normalizeScore(latestScore?.total_score) ?? 0;
+  const category = deriveCreditCategory(
+    latestScore?.total_score,
+    latestScore ? undefined : farmer.creditCategory
+  );
+  const c = getCreditCategoryPalette(category);
   const pct = (score / 10) * 100;
 
   const openBreakdownModal = (event: FarmerCreditScoreEvent) => {

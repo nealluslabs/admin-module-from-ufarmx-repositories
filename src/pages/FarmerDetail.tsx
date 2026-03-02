@@ -4,6 +4,7 @@ import { ArrowLeft, Gauge, Mail, MapPin, UserRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { farmerService, type FarmerDetail } from '@/services/farmer.service';
 import { creditScoreService, type FarmerCreditScoreEvent } from '@/services/credit-score.service';
+import { deriveCreditCategory, getCreditCategoryPalette, normalizeScore } from '@/utils/credit-score';
 import { ROUTES } from '@/utils/routes';
 import { FarmerDetailTabs, type FarmerTab } from '@/components/FarmerDetails/FarmerDetailTabs';
 
@@ -18,17 +19,6 @@ const formatOnboardDate = (value: string): string => {
     hour: 'numeric',
     minute: '2-digit',
   });
-};
-
-const getCreditColors = (category: string) => {
-  const cat = category.toLowerCase();
-  if (cat === 'good' || cat === 'high' || cat === 'excellent')
-    return { scoreColor: '#059669', bgColor: '#D1FAE5', textColor: '#065F46' };
-  if (cat === 'medium' || cat === 'average' || cat === 'fair')
-    return { scoreColor: '#df8506', bgColor: '#ffe0b8', textColor: '#df8506' };
-  if (cat === 'low' || cat === 'poor' || cat === 'bad')
-    return { scoreColor: '#d92d20', bgColor: '#FEE4E2', textColor: '#d92d20' };
-  return { scoreColor: '#df8506', bgColor: '#ffe0b8', textColor: '#df8506' };
 };
 
 function Avatar({ name, photo }: { name: string; photo?: string }) {
@@ -104,16 +94,10 @@ export default function FarmerDetailPage() {
 
   if (!farmer) return null;
 
-  const scoreValue = latestScore ? String(latestScore.total_score) : 'N/A';
-  const derivedCategory =
-    latestScore?.total_score !== undefined
-      ? latestScore.total_score >= 7
-        ? 'Good'
-        : latestScore.total_score >= 4
-          ? 'Medium'
-          : 'Low'
-      : 'N/A';
-  const creditColors = getCreditColors(derivedCategory);
+  const numericScore = normalizeScore(latestScore?.total_score);
+  const scoreValue = numericScore === null ? 'N/A' : numericScore.toFixed(1);
+  const derivedCategory = deriveCreditCategory(numericScore, farmer.creditCategory);
+  const creditColors = getCreditCategoryPalette(derivedCategory);
 
   const handleRecalculate = async () => {
     if (!id) return;
