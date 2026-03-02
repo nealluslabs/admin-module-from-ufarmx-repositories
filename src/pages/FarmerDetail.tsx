@@ -95,7 +95,10 @@ export default function FarmerDetailPage() {
   if (!farmer) return null;
 
   const numericScore = normalizeScore(latestScore?.total_score);
-  const scoreValue = numericScore === null ? 'N/A' : numericScore.toFixed(1);
+  const scoreValue =
+    numericScore === null
+      ? 'N/A'
+      : `${(Math.trunc(numericScore * 100) / 100).toFixed(2)}`;
   const derivedCategory = deriveCreditCategory(numericScore, farmer.creditCategory);
   const creditColors = getCreditCategoryPalette(derivedCategory);
 

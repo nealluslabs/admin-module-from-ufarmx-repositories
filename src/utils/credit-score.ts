@@ -22,16 +22,16 @@ export const deriveCreditCategory = (
   score?: number | null,
   rawCategory?: string | null
 ): CreditCategory => {
-  const normalizedCategory = String(rawCategory || '').trim().toLowerCase();
-  if (GOOD_SET.has(normalizedCategory)) return 'Good';
-  if (MEDIUM_SET.has(normalizedCategory)) return 'Medium';
-  if (LOW_SET.has(normalizedCategory)) return 'Low';
-
   if (typeof score === 'number' && Number.isFinite(score)) {
     if (score >= 7) return 'Good';
     if (score >= 4) return 'Medium';
     return 'Low';
   }
+
+  const normalizedCategory = String(rawCategory || '').trim().toLowerCase();
+  if (GOOD_SET.has(normalizedCategory)) return 'Good';
+  if (MEDIUM_SET.has(normalizedCategory)) return 'Medium';
+  if (LOW_SET.has(normalizedCategory)) return 'Low';
 
   return 'N/A';
 };
@@ -49,4 +49,3 @@ export const getCreditCategoryPalette = (category: CreditCategory): CreditCatego
       return { scoreColor: '#667085', bgColor: '#F2F4F7', textColor: '#475467', label: 'Not Rated' };
   }
 };
-
