@@ -70,6 +70,12 @@ export interface LoanDetailsResponse {
   transactions: LoanTransaction[];
 }
 
+export interface MarkInstallmentPaidPayload {
+  paidDate: string;
+  reference: string;
+  note?: string;
+}
+
 export const loanService = {
   async getLoans(params?: {
     page?: number;
@@ -91,6 +97,18 @@ export const loanService = {
 
   async getLoanDetails(id: string): Promise<LoanDetailsResponse> {
     const response = await api.get(`/loans/${id}/details`);
+    return response.data?.data;
+  },
+
+  async markRetailerInstallmentPaid(
+    loanId: string,
+    installmentId: string,
+    payload: MarkInstallmentPaidPayload
+  ): Promise<LoanDetailsResponse> {
+    const response = await api.put(
+      `/loans/${loanId}/installments/${installmentId}/mark-paid`,
+      payload
+    );
     return response.data?.data;
   },
 };

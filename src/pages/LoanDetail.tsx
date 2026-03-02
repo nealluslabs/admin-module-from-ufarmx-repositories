@@ -3,6 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Banknote, ClipboardList, ListChecks } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { loanService, type LoanDetailsResponse, type LoanInstallment } from '@/services/loan.service';
 import { ROUTES } from '@/utils/routes';
 
@@ -56,7 +65,7 @@ function MiniAvatar({ name }: { name: string }) {
 
 const getStatusClasses = (status: string) => {
   const normalized = String(status || '').toLowerCase();
-  if (['active', 'loan_created', 'posted', 'paid', 'completed'].includes(normalized)) {
+  if (['active', 'loan_created', 'posted', 'paid', 'repaid', 'completed'].includes(normalized)) {
     return 'bg-[#ECFDF3] text-[#027A48]';
   }
   if (['defaulted', 'cancelled', 'failed', 'reversed', 'overdue'].includes(normalized)) {
@@ -71,6 +80,13 @@ export default function LoanDetailPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<LoanDetailsResponse | null>(null);
   const [activeTab, setActiveTab] = useState<LoanTab>('overview');
+  const [activeInstallmentLeg, setActiveInstallmentLeg] = useState<'retailer_to_platform' | 'farmer_to_retailer'>('retailer_to_platform');
+  const [markPaidModalOpen, setMarkPaidModalOpen] = useState(false);
+  const [selectedInstallment, setSelectedInstallment] = useState<LoanInstallment | null>(null);
+  const [paidDate, setPaidDate] = useState(() => new Date().toISOString().split('T')[0] || '');
+  const [reference, setReference] = useState('');
+  const [paymentNote, setPaymentNote] = useState('');
+  const [submittingPayment, setSubmittingPayment] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -100,6 +116,31 @@ export default function LoanDetailPage() {
 
     return byLeg;
   }, [data?.installments]);
+  const nextRetailerPayableInstallment = useMemo(
+    () => groupedInstallments.retailer_to_platform.find((item) => item.status !== 'paid') || null,
+    [groupedInstallments.retailer_to_platform]
+  );
+
+  useEffect(() => {
+    if (
+      activeInstallmentLeg === 'retailer_to_platform' &&
+      groupedInstallments.retailer_to_platform.length === 0 &&
+      groupedInstallments.farmer_to_retailer.length > 0
+    ) {
+      setActiveInstallmentLeg('farmer_to_retailer');
+    }
+    if (
+      activeInstallmentLeg === 'farmer_to_retailer' &&
+      groupedInstallments.farmer_to_retailer.length === 0 &&
+      groupedInstallments.retailer_to_platform.length > 0
+    ) {
+      setActiveInstallmentLeg('retailer_to_platform');
+    }
+  }, [
+    activeInstallmentLeg,
+    groupedInstallments.retailer_to_platform.length,
+    groupedInstallments.farmer_to_retailer.length,
+  ]);
 
   if (loading) {
     return <div className="px-4 py-10 text-sm text-[#667085]">Loading loan details...</div>;
@@ -117,6 +158,43 @@ export default function LoanDetailPage() {
     loan.retailerId?.businessName ||
     loan.retailerUserId?.email ||
     'N/A';
+
+  const openMarkPaidModal = (installment: LoanInstallment) => {
+    setSelectedInstallment(installment);
+    setPaidDate(new Date().toISOString().split('T')[0] || '');
+    setReference('');
+    setPaymentNote('');
+    setMarkPaidModalOpen(true);
+  };
+
+  const handleMarkPaid = async () => {
+    if (!id || !selectedInstallment) return;
+    if (!paidDate) {
+      toast.error('Paid date is required');
+      return;
+    }
+    if (!reference.trim()) {
+      toast.error('Transaction reference is required');
+      return;
+    }
+
+    try {
+      setSubmittingPayment(true);
+      const response = await loanService.markRetailerInstallmentPaid(id, selectedInstallment._id, {
+        paidDate: new Date(`${paidDate}T00:00:00.000Z`).toISOString(),
+        reference: reference.trim(),
+        note: paymentNote.trim() || undefined,
+      });
+      setData(response);
+      setMarkPaidModalOpen(false);
+      setSelectedInstallment(null);
+      toast.success('Installment marked as paid');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to mark installment as paid');
+    } finally {
+      setSubmittingPayment(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 pb-6">
@@ -303,38 +381,121 @@ export default function LoanDetailPage() {
       {activeTab === 'installments' ? (
         <div className="rounded-2xl bg-white p-6">
           <h2 className="mb-4 text-base font-semibold text-[#344054]">Installments</h2>
-          {(['retailer_to_platform', 'farmer_to_retailer'] as const).map((leg) => (
-            <div key={leg} className="mb-6 rounded-xl border border-[#EAECF0] bg-[#FCFCFD] p-4 last:mb-0">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-[#344054]">{legLabel(leg)}</h3>
-                <span className="text-xs text-[#667085]">{groupedInstallments[leg].length} installments</span>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-[#EAECF0] bg-white">
-                <div className="grid grid-cols-[0.6fr_1fr_1fr_1fr_1fr] border-b border-[#EAECF0] bg-[#F9FAFB] px-4 py-3 text-sm font-medium text-[#667085]">
-                  <p>#</p><p>Due Date</p><p>Amount</p><p>Paid</p><p>Status</p>
-                </div>
-                {groupedInstallments[leg].length === 0 ? (
-                  <div className="px-4 py-6 text-center text-sm text-[#667085]">No installments</div>
-                ) : (
-                  groupedInstallments[leg].map((item) => (
-                    <div key={item._id} className="grid grid-cols-[0.6fr_1fr_1fr_1fr_1fr] border-b border-[#EAECF0] px-4 py-3 text-sm text-[#392751] last:border-b-0">
-                      <p>{item.installmentNumber}</p>
-                      <p>{formatDateOnly(item.dueDate)}</p>
-                      <p>{formatCurrency(item.amount)}</p>
-                      <p>{formatCurrency(item.paidAmount)}</p>
-                      <p>
-                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium capitalize ${installmentStatusClasses(item.status)}`}>
-                          {item.status.replaceAll('_', ' ')}
-                        </span>
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
+          <div className="rounded-xl border border-[#EAECF0] bg-[#FCFCFD] p-4">
+            <div className="mb-3 flex items-center gap-6 border-b border-[#EAECF0]">
+              {(['retailer_to_platform', 'farmer_to_retailer'] as const).map((leg) => {
+                const isActive = activeInstallmentLeg === leg;
+                return (
+                  <button
+                    key={leg}
+                    type="button"
+                    onClick={() => setActiveInstallmentLeg(leg)}
+                    className={`-mb-px border-b-2 pb-2 text-sm font-medium transition-colors ${
+                      isActive ? 'border-[#0A6054] text-[#0A6054]' : 'border-transparent text-[#667085] hover:text-[#344054]'
+                    }`}
+                  >
+                    {legLabel(leg)}
+                    <span className="ml-2 text-xs text-[#98A2B3]">({groupedInstallments[leg].length})</span>
+                  </button>
+                );
+              })}
             </div>
-          ))}
+            <div className="overflow-hidden rounded-xl border border-[#EAECF0] bg-white">
+              <div className={`grid border-b border-[#EAECF0] bg-[#F9FAFB] px-4 py-3 text-sm font-medium text-[#667085] ${
+                activeInstallmentLeg === 'retailer_to_platform'
+                  ? 'grid-cols-[0.6fr_1fr_1fr_1fr_1fr_1fr]'
+                  : 'grid-cols-[0.6fr_1fr_1fr_1fr_1fr]'
+              }`}>
+                <p>#</p><p>Due Date</p><p>Amount</p><p>Paid</p><p>Status</p>
+                {activeInstallmentLeg === 'retailer_to_platform' ? <p>Action</p> : null}
+              </div>
+              {groupedInstallments[activeInstallmentLeg].length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-[#667085]">No installments</div>
+              ) : (
+                groupedInstallments[activeInstallmentLeg].map((item) => (
+                  <div key={item._id} className={`grid border-b border-[#EAECF0] px-4 py-3 text-sm text-[#392751] last:border-b-0 ${
+                    activeInstallmentLeg === 'retailer_to_platform'
+                      ? 'grid-cols-[0.6fr_1fr_1fr_1fr_1fr_1fr]'
+                      : 'grid-cols-[0.6fr_1fr_1fr_1fr_1fr]'
+                  }`}>
+                    <p>{item.installmentNumber}</p>
+                    <p>{formatDateOnly(item.dueDate)}</p>
+                    <p>{formatCurrency(item.amount)}</p>
+                    <p>{formatCurrency(item.paidAmount)}</p>
+                    <p>
+                      <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium capitalize ${installmentStatusClasses(item.status)}`}>
+                        {item.status.replaceAll('_', ' ')}
+                      </span>
+                    </p>
+                    {activeInstallmentLeg === 'retailer_to_platform' ? (
+                      <div className="text-right">
+                        {item.status !== 'paid' ? (
+                          nextRetailerPayableInstallment?._id === item._id ? (
+                            <Button size="sm" variant="outline" onClick={() => openMarkPaidModal(item)}>
+                              Mark Paid
+                            </Button>
+                          ) : (
+                            <span className="text-xs text-[#98A2B3]">Await previous installment</span>
+                          )
+                        ) : (
+                          <span className="text-xs text-[#98A2B3]">-</span>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       ) : null}
+
+      <Dialog open={markPaidModalOpen} onOpenChange={setMarkPaidModalOpen}>
+        <DialogContent className="sm:max-w-[540px]">
+          <DialogHeader>
+            <DialogTitle>Mark Retailer Payment</DialogTitle>
+            <DialogDescription>
+              Capture repayment for installment {selectedInstallment?.installmentNumber || '-'} and post a repayment transaction.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[#344054]">Date Paid</label>
+              <Input type="date" value={paidDate} onChange={(event) => setPaidDate(event.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[#344054]">Transaction ID / Reference</label>
+              <Input
+                value={reference}
+                onChange={(event) => setReference(event.target.value)}
+                placeholder="e.g. TRX-2026-001"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-[#344054]">Note</label>
+              <textarea
+                value={paymentNote}
+                onChange={(event) => setPaymentNote(event.target.value)}
+                placeholder="Optional note"
+                className="min-h-[92px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setMarkPaidModalOpen(false)}
+              disabled={submittingPayment}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleMarkPaid} disabled={submittingPayment}>
+              {submittingPayment ? 'Saving...' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
