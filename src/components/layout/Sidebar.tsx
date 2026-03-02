@@ -4,10 +4,13 @@ import {
   HiOutlineClipboardDocumentList, 
   HiOutlineMapPin, 
   HiArrowLeftOnRectangle, 
-  HiOutlineKey 
+  HiOutlineKey,
+  HiOutlineShieldCheck,
+  HiOutlineUserCircle,
+  HiOutlineUserGroup,
 } from 'react-icons/hi2';
 import { FaWpforms } from 'react-icons/fa';
-import { FiUsers } from 'react-icons/fi';
+import { FiTrendingUp } from 'react-icons/fi';
 import { Logo } from './Logo';
 import { useAuthStore } from '@/store/auth-store';
 import { ROUTES, ROUTES_GROUP } from '@/utils/routes';
@@ -41,21 +44,27 @@ export function Sidebar() {
     {
       title: 'Admins',
       url: ROUTES.ADMINS,
-      icon: <FiUsers className="w-5 h-5" />,
+      icon: <HiOutlineShieldCheck className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.ADMINS,
       roles: ['superadmin'],
     },
     {
       title: 'Agents',
       url: ROUTES.AGENTS,
-      icon: <FiUsers className="w-5 h-5" />,
+      icon: <HiOutlineUserCircle className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.AGENTS,
     },
     {
       title: 'Farmers',
       url: ROUTES.FARMERS,
-      icon: <FiUsers className="w-5 h-5" />,
+      icon: <HiOutlineUserGroup className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.FARMERS,
+    },
+    {
+      title: 'Credit Scores',
+      url: ROUTES.CREDIT_SCORE_CALCULATORS,
+      icon: <FiTrendingUp className="w-5 h-5" />,
+      routeGroup: ROUTES_GROUP.CREDIT_SCORE_CALCULATORS,
     },
     {
       title: 'Responses',

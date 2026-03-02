@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Gauge, Mail, MapPin, UserRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { farmerService, type FarmerDetail } from '@/services/farmer.service';
+import { creditScoreService, type FarmerCreditScoreEvent } from '@/services/credit-score.service';
 import { ROUTES } from '@/utils/routes';
 import { FarmerDetailTabs, type FarmerTab } from '@/components/FarmerDetails/FarmerDetailTabs';
 
@@ -62,6 +63,9 @@ export default function FarmerDetailPage() {
   const [farmer, setFarmer] = useState<FarmerDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<FarmerTab>('information');
+  const [latestScore, setLatestScore] = useState<FarmerCreditScoreEvent | null>(null);
+  const [scoreHistory, setScoreHistory] = useState<FarmerCreditScoreEvent[]>([]);
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
   useEffect(() => {
     if (!id) {
@@ -71,8 +75,14 @@ export default function FarmerDetailPage() {
     const fetchFarmer = async () => {
       try {
         setLoading(true);
-        const data = await farmerService.getFarmerById(id);
+        const [data, score, history] = await Promise.all([
+          farmerService.getFarmerById(id),
+          creditScoreService.getFarmerLatestScore(id).catch(() => null),
+          creditScoreService.getFarmerScoreHistory(id, 20).catch(() => []),
+        ]);
         setFarmer(data);
+        setLatestScore(score);
+        setScoreHistory(history);
       } catch (error) {
         console.error(error);
         toast.error('Failed to fetch farmer details');
@@ -94,7 +104,35 @@ export default function FarmerDetailPage() {
 
   if (!farmer) return null;
 
-  const creditColors = getCreditColors(farmer.creditCategory);
+  const scoreValue = latestScore ? String(latestScore.total_score) : 'N/A';
+  const derivedCategory =
+    latestScore?.total_score !== undefined
+      ? latestScore.total_score >= 7
+        ? 'Good'
+        : latestScore.total_score >= 4
+          ? 'Medium'
+          : 'Low'
+      : 'N/A';
+  const creditColors = getCreditColors(derivedCategory);
+
+  const handleRecalculate = async () => {
+    if (!id) return;
+    try {
+      setIsRecalculating(true);
+      await creditScoreService.recalculateFarmerScore(id);
+      const [refreshed, history] = await Promise.all([
+        creditScoreService.getFarmerLatestScore(id),
+        creditScoreService.getFarmerScoreHistory(id, 20),
+      ]);
+      setLatestScore(refreshed);
+      setScoreHistory(history);
+      toast.success('Credit score recalculated');
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Failed to recalculate');
+    } finally {
+      setIsRecalculating(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 pb-6">
@@ -149,14 +187,27 @@ export default function FarmerDetailPage() {
               <p className="text-[10px] text-[#141b34]">Credit Score</p>
               <div className="flex items-center gap-2">
                 <p className="text-[16px] font-semibold" style={{ color: creditColors.scoreColor }}>
-                  {farmer.creditScore}
+                  {scoreValue}
                 </p>
                 <span
                   className="rounded-full px-2 py-0.5 text-[10px]"
                   style={{ backgroundColor: creditColors.bgColor, color: creditColors.textColor }}
                 >
-                  {farmer.creditCategory}
+                  {derivedCategory}
                 </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleRecalculate}
+                  disabled={isRecalculating}
+                  className="rounded border border-[#0A6054] px-2 py-0.5 text-[10px] text-[#0A6054] disabled:opacity-50"
+                >
+                  {isRecalculating ? 'Recalculating...' : 'Recalculate'}
+                </button>
+                {latestScore?.calculator_version ? (
+                  <span className="text-[10px] text-[#667085]">v{latestScore.calculator_version}</span>
+                ) : null}
               </div>
             </div>
           </div>
@@ -190,6 +241,10 @@ export default function FarmerDetailPage() {
       {/* ── Tabbed Sections ── */}
       <FarmerDetailTabs
         farmer={farmer}
+        latestScore={latestScore}
+        scoreHistory={scoreHistory}
+        onRecalculate={handleRecalculate}
+        isRecalculating={isRecalculating}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />
