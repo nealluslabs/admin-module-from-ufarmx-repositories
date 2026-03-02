@@ -106,10 +106,14 @@ export default function RequestDetailPage() {
   const [noteDraft, setNoteDraft] = useState('');
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [disburseModalOpen, setDisburseModalOpen] = useState(false);
   const [coveragePercent, setCoveragePercent] = useState('70');
   const [approvedTenorWeeks, setApprovedTenorWeeks] = useState('12');
   const [actionNote, setActionNote] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [disbursementAmount, setDisbursementAmount] = useState('');
+  const [disbursementReference, setDisbursementReference] = useState('');
+  const [disbursementNote, setDisbursementNote] = useState('');
 
   const retailerName = useMemo(() => {
     if (!request?.retailer) return 'N/A';
@@ -224,6 +228,7 @@ export default function RequestDetailPage() {
 
   const canMoveToReview = request?.status === 'submitted';
   const canApproveOrReject = request?.status === 'admin_under_review';
+  const canDisburse = request?.status === 'offer_accepted';
   const farmerProfileId = request?.farmer?._id || '';
   const retailerProfileId = request?.retailer_id || '';
 
@@ -325,6 +330,36 @@ export default function RequestDetailPage() {
     }
   };
 
+  const handleDisburse = async () => {
+    if (!request) return;
+    const amount = Number(disbursementAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Disbursement amount must be greater than zero');
+      return;
+    }
+
+    try {
+      setSubmittingAction(true);
+      await requestService.disburseRequest(request._id, {
+        amount,
+        reference: disbursementReference.trim() || undefined,
+        note: disbursementNote.trim() || undefined,
+      });
+      toast.success('Request disbursed and loan created');
+      setDisburseModalOpen(false);
+      setDisbursementAmount('');
+      setDisbursementReference('');
+      setDisbursementNote('');
+      await fetchRequest();
+      await fetchAuditTrail();
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to disburse request');
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
@@ -401,6 +436,31 @@ export default function RequestDetailPage() {
                   Approve
                 </Button>
               </>
+            ) : null}
+            {canDisburse ? (
+              <Button
+                onClick={() => {
+                  const remainingAmount = Number(request.remainingAmount || 0);
+                  const coverage = Number(request.coveragePercent || 0);
+                  const defaultAmount =
+                    coverage > 0 ? (coverage / 100) * remainingAmount : remainingAmount;
+                  setDisbursementAmount(String(Math.max(defaultAmount, 0)));
+                  setDisbursementReference('');
+                  setDisbursementNote('');
+                  setDisburseModalOpen(true);
+                }}
+                disabled={submittingAction}
+              >
+                Create Disbursement
+              </Button>
+            ) : null}
+            {request.status === 'loan_created' && request.loanId ? (
+              <Button
+                variant="outline"
+                onClick={() => navigate(ROUTES.LOAN_DETAIL.replace(':id', request.loanId!))}
+              >
+                View Loan
+              </Button>
             ) : null}
           </div>
         </div>
@@ -637,6 +697,52 @@ export default function RequestDetailPage() {
             </Button>
             <Button variant="destructive" onClick={handleReject} disabled={submittingAction}>
               {submittingAction ? 'Rejecting...' : 'Reject Request'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={disburseModalOpen} onOpenChange={setDisburseModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Disbursement</DialogTitle>
+            <DialogDescription>
+              This will create a disbursement transaction, loan, and weekly installments.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="grid gap-1">
+              <label className="text-sm font-medium text-[#344054]">Disbursement Amount</label>
+              <Input
+                value={disbursementAmount}
+                onChange={(e) => setDisbursementAmount(e.target.value)}
+                placeholder="Enter amount"
+              />
+            </div>
+            <div className="grid gap-1">
+              <label className="text-sm font-medium text-[#344054]">Reference (Optional)</label>
+              <Input
+                value={disbursementReference}
+                onChange={(e) => setDisbursementReference(e.target.value)}
+                placeholder="Bank reference / transfer id"
+              />
+            </div>
+            <div className="grid gap-1 rounded-lg border border-[#EAECF0] p-3">
+              <label className="text-sm font-medium text-[#344054]">Disbursement Note (Optional)</label>
+              <textarea
+                value={disbursementNote}
+                onChange={(e) => setDisbursementNote(e.target.value)}
+                placeholder="Add a note for disbursement..."
+                className="min-h-[90px] w-full rounded-lg border border-[#D0D5DD] bg-white px-3 py-2 text-sm text-[#344054] outline-none transition-colors placeholder:text-[#98A2B3] focus:border-[#0A6054]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDisburseModalOpen(false)} disabled={submittingAction}>
+              Cancel
+            </Button>
+            <Button onClick={handleDisburse} disabled={submittingAction}>
+              {submittingAction ? 'Processing...' : 'Disburse & Create Loan'}
             </Button>
           </DialogFooter>
         </DialogContent>

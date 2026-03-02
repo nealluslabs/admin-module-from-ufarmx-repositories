@@ -2,6 +2,7 @@ import api from '@/lib/api';
 
 export interface RequestListItem {
   id: string;
+  loanId?: string;
   requestType: string;
   retailerName: string;
   farmerName: string;
@@ -24,6 +25,7 @@ export interface RequestListResponse {
 
 export interface RequestDetail {
   _id: string;
+  loanId?: string;
   retailer_id?: string;
   requestType?: string;
   status: string;
@@ -171,6 +173,12 @@ export const requestService = {
       .map((request) => ({
         id: asText(request._id, ''),
         requestType: asText(request.requestType, 'N/A'),
+        loanId:
+          typeof request.loanId === 'string'
+            ? request.loanId
+            : request.loanId?._id
+              ? asText(request.loanId._id, '')
+              : undefined,
         retailerName: toRetailerName(request),
         farmerName: asText(request.farmerName, 'N/A'),
         status: asText(request.status, 'N/A'),
@@ -200,7 +208,16 @@ export const requestService = {
 
   getRequestById: async (id: string): Promise<RequestDetail> => {
     const response = await api.get(`/requests/${id}/details`);
-    return response.data?.data;
+    const request = response.data?.data || {};
+    return {
+      ...request,
+      loanId:
+        typeof request.loanId === 'string'
+          ? request.loanId
+          : request.loanId?._id
+            ? asText(request.loanId._id, '')
+            : undefined,
+    };
   },
 
   moveToReview: async (requestId: string) => {
@@ -221,6 +238,14 @@ export const requestService = {
     payload: { reason: string; note?: string }
   ) => {
     const response = await api.post(`/requests/${requestId}/reject`, payload);
+    return response.data?.data;
+  },
+
+  disburseRequest: async (
+    requestId: string,
+    payload: { amount: number; reference?: string; note?: string }
+  ) => {
+    const response = await api.post(`/requests/${requestId}/disburse`, payload);
     return response.data?.data;
   },
 

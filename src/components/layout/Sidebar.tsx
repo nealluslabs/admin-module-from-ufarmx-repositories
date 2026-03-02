@@ -13,6 +13,7 @@ import {
 import { FaWpforms } from 'react-icons/fa';
 import { FiTrendingUp } from 'react-icons/fi';
 import { FiFileText } from 'react-icons/fi';
+import { FiCreditCard } from 'react-icons/fi';
 import { Logo } from './Logo';
 import { useAuthStore } from '@/store/auth-store';
 import { ROUTES, ROUTES_GROUP } from '@/utils/routes';
@@ -73,6 +74,12 @@ export function Sidebar() {
       url: ROUTES.REQUESTS,
       icon: <FiFileText className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.REQUESTS,
+    },
+    {
+      title: 'Loans',
+      url: ROUTES.LOANS,
+      icon: <FiCreditCard className="w-5 h-5" />,
+      routeGroup: ROUTES_GROUP.LOANS,
     },
     {
       title: 'Credit Scores',

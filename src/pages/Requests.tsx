@@ -139,14 +139,25 @@ export default function RequestsPage() {
                     {request.createdAt ? new Date(request.createdAt).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
-                <div className="w-[80px] shrink-0 px-4 text-right">
-                  <button
-                    type="button"
-                    className="text-base font-normal leading-4 text-[#90C434] hover:underline"
-                    onClick={() => navigate(ROUTES.REQUEST_DETAIL.replace(':id', request.id))}
-                  >
-                    View
-                  </button>
+                <div className="w-[140px] shrink-0 px-4 text-right">
+                  <div className="flex items-center justify-end gap-3">
+                    {request.status === 'loan_created' && request.loanId ? (
+                      <button
+                        type="button"
+                        className="text-sm font-normal leading-4 text-[#0A6054] hover:underline"
+                        onClick={() => navigate(ROUTES.LOAN_DETAIL.replace(':id', request.loanId!))}
+                      >
+                        View Loan
+                      </button>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="text-base font-normal leading-4 text-[#90C434] hover:underline"
+                      onClick={() => navigate(ROUTES.REQUEST_DETAIL.replace(':id', request.id))}
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -171,4 +182,3 @@ export default function RequestsPage() {
     </div>
   );
 }
-

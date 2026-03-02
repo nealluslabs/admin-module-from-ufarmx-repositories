@@ -14,6 +14,8 @@ import Farmers from '@/pages/Farmers';
 import FarmerDetail from '@/pages/FarmerDetail';
 import Requests from '@/pages/Requests';
 import RequestDetail from '@/pages/RequestDetail';
+import Loans from '@/pages/Loans';
+import LoanDetail from '@/pages/LoanDetail';
 import CreditScoreCalculators from '@/pages/CreditScoreCalculators';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
@@ -134,6 +136,22 @@ function App() {
           element={
             <ProtectedLayout>
               <RequestDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LOANS}
+          element={
+            <ProtectedLayout>
+              <Loans />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LOAN_DETAIL}
+          element={
+            <ProtectedLayout>
+              <LoanDetail />
             </ProtectedLayout>
           }
         />
