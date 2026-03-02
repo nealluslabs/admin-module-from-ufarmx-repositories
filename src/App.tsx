@@ -12,6 +12,7 @@ import Retailers from '@/pages/Retailers';
 import RetailerDetail from '@/pages/RetailerDetail';
 import Farmers from '@/pages/Farmers';
 import FarmerDetail from '@/pages/FarmerDetail';
+import Requests from '@/pages/Requests';
 import CreditScoreCalculators from '@/pages/CreditScoreCalculators';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
@@ -116,6 +117,14 @@ function App() {
           element={
             <ProtectedLayout>
               <FarmerDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.REQUESTS}
+          element={
+            <ProtectedLayout>
+              <Requests />
             </ProtectedLayout>
           }
         />

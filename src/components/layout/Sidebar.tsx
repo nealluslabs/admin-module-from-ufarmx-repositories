@@ -12,6 +12,7 @@ import {
 } from 'react-icons/hi2';
 import { FaWpforms } from 'react-icons/fa';
 import { FiTrendingUp } from 'react-icons/fi';
+import { FiFileText } from 'react-icons/fi';
 import { Logo } from './Logo';
 import { useAuthStore } from '@/store/auth-store';
 import { ROUTES, ROUTES_GROUP } from '@/utils/routes';
@@ -66,6 +67,12 @@ export function Sidebar() {
       url: ROUTES.FARMERS,
       icon: <HiOutlineUserGroup className="w-5 h-5" />,
       routeGroup: ROUTES_GROUP.FARMERS,
+    },
+    {
+      title: 'Requests',
+      url: ROUTES.REQUESTS,
+      icon: <FiFileText className="w-5 h-5" />,
+      routeGroup: ROUTES_GROUP.REQUESTS,
     },
     {
       title: 'Credit Scores',
