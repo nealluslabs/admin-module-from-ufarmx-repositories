@@ -124,6 +124,18 @@ export interface FarmerDetailAgent {
   photo?: string;
 }
 
+export type FarmerOnboardedByType = 'agent' | 'retailer' | 'admin' | 'unknown';
+
+export interface FarmerOnboardedBy {
+  id?: string;
+  type: FarmerOnboardedByType;
+  label: string;
+  name: string;
+  phone: string;
+  location: string;
+  photo?: string;
+}
+
 export interface FarmerDetailHarvest {
   id: string;
   name: string;
@@ -165,9 +177,31 @@ export interface FarmerDetail {
   farmingExperience: string;
   challenges: string;
   agent?: FarmerDetailAgent;
+  onboardedBy?: FarmerOnboardedBy;
   harvests: FarmerDetailHarvest[];
   cropDeposits: FarmerDetailHarvest[];
 }
+
+const composePersonName = (source: UnknownRecord): string => {
+  const firstName = asText(readValue(source, ['firstName']), '').trim();
+  const lastName = asText(readValue(source, ['lastName']), '').trim();
+  const fullName = `${firstName} ${lastName}`.trim();
+  if (fullName) return fullName;
+  return asText(
+    readValue(source, ['name', 'businessName', 'companyName', 'storeName', 'contactPerson']),
+    'N/A'
+  );
+};
+
+const composeLocation = (source: UnknownRecord): string => {
+  const parts = [
+    asText(readValue(source, ['location']), '').trim(),
+    asText(readValue(source, ['city']), '').trim(),
+    asText(readValue(source, ['state']), '').trim(),
+    asText(readValue(source, ['country']), '').trim(),
+  ].filter(Boolean);
+  return parts.length ? parts.join(', ') : 'N/A';
+};
 
 export const farmerService = {
   getFarmers: async (params?: {
@@ -211,6 +245,114 @@ export const farmerService = {
 
     const farmer = (response.data?.data || {}) as UnknownRecord;
     const agent = (farmer.agent || farmer.agent_user_id || {}) as UnknownRecord;
+    const agentProfile = (farmer.agent_profile || {}) as UnknownRecord;
+    const retailer = (farmer.retailer || {}) as UnknownRecord;
+    const retailerUser = (farmer.retailer_user || {}) as UnknownRecord;
+    const addedByUser = (farmer.addedByUser || {}) as UnknownRecord;
+    const addedByAgent = (farmer.addedByAgent || {}) as UnknownRecord;
+    const addedByAdmin = (farmer.addedByAdmin || {}) as UnknownRecord;
+    const addedByRetailer = (farmer.addedByRetailer || {}) as UnknownRecord;
+    const rawAddedByType = asText(readValue(farmer, ['addedByType']), '').toLowerCase();
+
+    const inferredType: FarmerOnboardedByType =
+      rawAddedByType === 'agent' || rawAddedByType === 'retailer' || rawAddedByType === 'admin'
+        ? (rawAddedByType as FarmerOnboardedByType)
+        : Object.keys(agent).length > 0 || Object.keys(agentProfile).length > 0
+          ? 'agent'
+          : Object.keys(retailer).length > 0
+            ? 'retailer'
+            : Object.keys(addedByAdmin).length > 0 || Object.keys(addedByUser).length > 0
+              ? 'admin'
+              : 'unknown';
+
+    const onboardedBy: FarmerOnboardedBy | undefined = (() => {
+      if (inferredType === 'agent') {
+        return {
+          id: asText(readValue(addedByUser, ['_id']), asText(readValue(agent, ['_id']), '')),
+          type: 'agent',
+          label: 'Agent',
+          name: composePersonName(addedByAgent) !== 'N/A'
+            ? composePersonName(addedByAgent)
+            : composePersonName(agentProfile) !== 'N/A'
+              ? composePersonName(agentProfile)
+              : composePersonName(agent),
+          phone: asText(
+            readValue(addedByAgent, ['phoneNumber', 'phone']),
+            asText(
+              readValue(agentProfile, ['phoneNumber', 'phone']),
+              asText(readValue(agent, ['phoneNumber', 'phone']), 'N/A')
+            )
+          ),
+          location: asText(
+            readValue(addedByAgent, ['location', 'country']),
+            composeLocation(agentProfile) !== 'N/A' ? composeLocation(agentProfile) : composeLocation(agent)
+          ),
+          photo: asText(
+            readValue(addedByAgent, ['image']),
+            asText(
+              readValue(agentProfile, ['image']),
+              asText(readValue(agent, ['profilePicture', 'photo']), '')
+            )
+          ),
+        };
+      }
+
+      if (inferredType === 'retailer') {
+        return {
+          id: asText(
+            readValue(retailer, ['retailer_user_id']),
+            asText(readValue(addedByUser, ['_id']), '')
+          ),
+          type: 'retailer',
+          label: 'Retailer',
+          name: composePersonName(retailer) !== 'N/A'
+            ? composePersonName(retailer)
+            : composePersonName(addedByRetailer) !== 'N/A'
+              ? composePersonName(addedByRetailer)
+              : composePersonName(retailerUser),
+          phone: asText(
+            readValue(retailer, ['phoneNumber', 'phone']),
+            asText(
+              readValue(addedByRetailer, ['phoneNumber', 'phone']),
+              asText(readValue(retailerUser, ['phoneNumber', 'phone']), 'N/A')
+            )
+          ),
+          location: composeLocation(retailer) !== 'N/A'
+            ? composeLocation(retailer)
+            : composeLocation(addedByRetailer) !== 'N/A'
+              ? composeLocation(addedByRetailer)
+              : composeLocation(retailerUser),
+          photo: asText(
+            readValue(retailer, ['photoUrl']),
+            asText(
+              readValue(addedByUser, ['profilePicture']),
+              asText(readValue(retailerUser, ['profilePicture']), '')
+            )
+          ),
+        };
+      }
+
+      if (inferredType === 'admin') {
+        return {
+          id: asText(readValue(addedByUser, ['_id']), ''),
+          type: 'admin',
+          label: 'Admin',
+          name: composePersonName(addedByAdmin) !== 'N/A'
+            ? composePersonName(addedByAdmin)
+            : composePersonName(addedByUser),
+          phone: asText(
+            readValue(addedByAdmin, ['phoneNumber', 'phone']),
+            asText(readValue(addedByUser, ['phoneNumber', 'phone']), 'N/A')
+          ),
+          location: composeLocation(addedByAdmin) !== 'N/A'
+            ? composeLocation(addedByAdmin)
+            : composeLocation(addedByUser),
+          photo: asText(readValue(addedByUser, ['profilePicture']), ''),
+        };
+      }
+
+      return undefined;
+    })();
 
     const harvestsSource = toArray<UnknownRecord>(
       readValue(farmer, ['harvests', 'harvest', 'requests'])
@@ -294,6 +436,7 @@ export const farmerService = {
             photo: asText(readValue(agent, ['photo']), ''),
           }
         : undefined,
+      onboardedBy,
       harvests: harvestsSource.map(mapHarvestItem),
       cropDeposits: cropDepositsSource.map(mapHarvestItem),
     };

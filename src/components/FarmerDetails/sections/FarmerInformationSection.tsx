@@ -59,6 +59,20 @@ interface Props {
 export function FarmerInformationSection({ farmer }: Props) {
   const navigate = useNavigate();
   const coordinates = parseCoordinates(farmer.gps || farmer.location || '');
+  const onboardedBy = farmer.onboardedBy || (farmer.agent ? { ...farmer.agent, type: 'agent' as const, label: 'Agent' } : undefined);
+
+  const getViewAction = (): { label: string; onClick: (() => void) | null } => {
+    if (!onboardedBy) return { label: '', onClick: null };
+    if (onboardedBy.type === 'agent') {
+      return { label: 'View Agent', onClick: () => navigate(ROUTES.AGENTS) };
+    }
+    if (onboardedBy.type === 'admin') {
+      return { label: 'View Admin', onClick: () => navigate(ROUTES.ADMINS) };
+    }
+    return { label: 'Retailer', onClick: null };
+  };
+
+  const viewAction = getViewAction();
 
   return (
     <div className="flex flex-col gap-4">
@@ -121,42 +135,53 @@ export function FarmerInformationSection({ farmer }: Props) {
         </div>
       </div>
 
-      {/* Agent Card */}
+      {/* Onboarded By Card */}
       <div className="rounded-2xl bg-white py-5">
-        <h3 className="mb-3 px-8 text-[18px] font-semibold tracking-[-0.36px] text-[#1b2559]">Agent</h3>
+        <div className="mb-3 flex items-center justify-between px-8">
+          <h3 className="text-[18px] font-semibold tracking-[-0.36px] text-[#1b2559]">Onboarded By</h3>
+          {onboardedBy ? (
+            <span className="rounded-full bg-[#F0FAF8] px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[#0a6054]">
+              {onboardedBy.label}
+            </span>
+          ) : null}
+        </div>
 
-        {farmer.agent ? (
+        {onboardedBy ? (
           <div className="flex w-full items-center px-8">
             <div className="flex w-[267px] shrink-0 items-center gap-3">
-              <Avatar name={farmer.agent.name} photo={farmer.agent.photo} />
-              <p className="truncate text-[15px] font-medium capitalize text-[#392751]">{farmer.agent.name}</p>
+              <Avatar name={onboardedBy.name} photo={onboardedBy.photo} />
+              <p className="truncate text-[15px] font-medium capitalize text-[#392751]">{onboardedBy.name}</p>
             </div>
             <div className="flex w-[250px] shrink-0 items-center">
               <div className="flex items-center gap-2 text-[14px] text-[#667085]">
                 <MapPin className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                {farmer.agent.location}
+                {onboardedBy.location}
               </div>
             </div>
             <div className="flex w-[217px] shrink-0 items-center">
               <div className="flex items-center gap-2 text-[14px] text-[#667085]">
                 <UserRound className="h-4 w-4 shrink-0 text-[#98a2b3]" />
-                {farmer.agent.phone}
+                {onboardedBy.phone}
               </div>
             </div>
             <div className="flex flex-1 items-center justify-end">
-              <button
-                type="button"
-                className="rounded-lg border border-[#0a6054] px-4 py-1.5 text-[13px] font-medium text-[#0a6054] transition-colors hover:bg-[#F0FAF8]"
-                onClick={() => navigate(ROUTES.AGENTS)}
-              >
-                View Agent
-              </button>
+              {viewAction.onClick ? (
+                <button
+                  type="button"
+                  className="rounded-lg border border-[#0a6054] px-4 py-1.5 text-[13px] font-medium text-[#0a6054] transition-colors hover:bg-[#F0FAF8]"
+                  onClick={viewAction.onClick}
+                >
+                  {viewAction.label}
+                </button>
+              ) : (
+                <span className="text-[13px] text-[#98a2b3]">No detail page</span>
+              )}
             </div>
           </div>
         ) : (
           <div className="mx-8 flex items-center gap-3 rounded-xl border border-dashed border-[#D0D5DD] px-6 py-8 text-[#667085]">
             <Mail className="h-5 w-5 shrink-0 text-[#98a2b3]" />
-            <span className="text-sm">No agent is linked to this farmer.</span>
+            <span className="text-sm">No uploader information is linked to this farmer.</span>
           </div>
         )}
       </div>
