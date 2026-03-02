@@ -8,6 +8,15 @@ import Forms from '@/pages/Forms';
 import AddForm from '@/pages/AddForm';
 import FormDetail from '@/pages/FormDetail';
 import Agents from '@/pages/Agents';
+import Retailers from '@/pages/Retailers';
+import RetailerDetail from '@/pages/RetailerDetail';
+import Farmers from '@/pages/Farmers';
+import FarmerDetail from '@/pages/FarmerDetail';
+import Requests from '@/pages/Requests';
+import RequestDetail from '@/pages/RequestDetail';
+import Loans from '@/pages/Loans';
+import LoanDetail from '@/pages/LoanDetail';
+import CreditScoreCalculators from '@/pages/CreditScoreCalculators';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
 import ResponseDetail from '@/pages/ResponseDetail';
@@ -79,6 +88,78 @@ function App() {
           element={
             <ProtectedLayout>
               <Agents />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RETAILERS}
+          element={
+            <ProtectedLayout>
+              <Retailers />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.RETAILER_DETAIL}
+          element={
+            <ProtectedLayout>
+              <RetailerDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.FARMERS}
+          element={
+            <ProtectedLayout>
+              <Farmers />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.FARMER_DETAIL}
+          element={
+            <ProtectedLayout>
+              <FarmerDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.REQUESTS}
+          element={
+            <ProtectedLayout>
+              <Requests />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.REQUEST_DETAIL}
+          element={
+            <ProtectedLayout>
+              <RequestDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LOANS}
+          element={
+            <ProtectedLayout>
+              <Loans />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.LOAN_DETAIL}
+          element={
+            <ProtectedLayout>
+              <LoanDetail />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CREDIT_SCORE_CALCULATORS}
+          element={
+            <ProtectedLayout>
+              <CreditScoreCalculators />
             </ProtectedLayout>
           }
         />

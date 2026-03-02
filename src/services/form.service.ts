@@ -11,6 +11,27 @@ export interface Form {
   isPublic?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  isFarmerForm?: boolean;
+  version?: number;
+  schemaHash?: string;
+}
+
+export interface FormFieldOption {
+  key: string;
+  value: string;
+}
+
+export interface FormField {
+  id: string;
+  key: string;
+  name: string;
+  prompt?: string;
+  type: string;
+  options?: FormFieldOption[];
+  validations?: {
+    isRequired?: boolean;
+    isReadOnly?: boolean;
+  };
 }
 
 export const formService = {
@@ -21,6 +42,11 @@ export const formService = {
 
   getForm: async (id: string): Promise<Form> => {
     const response = await api.get(`/forms/${id}`);
+    return response.data.data;
+  },
+
+  getFarmerForm: async (): Promise<Form> => {
+    const response = await api.get('/forms/farmer');
     return response.data.data;
   },
 
@@ -72,4 +98,3 @@ export const formService = {
     return response.data.data.requiredFields;
   },
 };
-

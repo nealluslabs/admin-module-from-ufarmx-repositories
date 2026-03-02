@@ -8,6 +8,15 @@ export const ROUTES = {
   ADD_FORM: '/form/create',
   FORM_DETAIL: '/form/:id',
   AGENTS: '/agents',
+  RETAILERS: '/retailers',
+  RETAILER_DETAIL: '/retailers/:id',
+  FARMERS: '/farmers',
+  FARMER_DETAIL: '/farmers/:id',
+  REQUESTS: '/requests',
+  REQUEST_DETAIL: '/requests/:id',
+  LOANS: '/loans',
+  LOAN_DETAIL: '/loans/:id',
+  CREDIT_SCORE_CALCULATORS: '/credit-score-calculators',
   ADD_AGENT: '/agent/create',
   ADMINS: '/admins',
   ADD_ADMIN: '/admin/create',
@@ -19,8 +28,12 @@ export const ROUTES = {
 export const ROUTES_GROUP = {
   FORMS: [ROUTES.FORMS, ROUTES.ADD_FORM, ROUTES.RESPONSE_DETAIL, ROUTES.FORM_DETAIL],
   AGENTS: [ROUTES.AGENTS, ROUTES.ADD_AGENT],
+  RETAILERS: [ROUTES.RETAILERS, ROUTES.RETAILER_DETAIL],
+  FARMERS: [ROUTES.FARMERS, ROUTES.FARMER_DETAIL],
+  REQUESTS: [ROUTES.REQUESTS, ROUTES.REQUEST_DETAIL],
+  LOANS: [ROUTES.LOANS, ROUTES.LOAN_DETAIL],
+  CREDIT_SCORE_CALCULATORS: [ROUTES.CREDIT_SCORE_CALCULATORS],
   ADMINS: [ROUTES.ADMINS, ROUTES.ADD_ADMIN],
 } as const;
 
 export default ROUTES;
-
