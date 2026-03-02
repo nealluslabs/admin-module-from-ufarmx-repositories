@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, SlidersHorizontal, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { farmerService, type FarmerListItem } from '@/services/farmer.service';
@@ -35,6 +36,7 @@ function FarmerAvatar({ name, photo }: { name: string; photo?: string }) {
 }
 
 export default function Farmers() {
+  const navigate = useNavigate();
   const [farmers, setFarmers] = useState<FarmerListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -188,7 +190,7 @@ export default function Farmers() {
                   <button
                     type="button"
                     className="text-base capitalize leading-4 text-[#90C434] hover:underline"
-                    onClick={() => toast('Farmer details page coming soon')}
+                    onClick={() => navigate(`/farmers/${farmer.id}`)}
                   >
                     View
                   </button>

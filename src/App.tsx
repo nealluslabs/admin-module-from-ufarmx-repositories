@@ -9,6 +9,7 @@ import AddForm from '@/pages/AddForm';
 import FormDetail from '@/pages/FormDetail';
 import Agents from '@/pages/Agents';
 import Farmers from '@/pages/Farmers';
+import FarmerDetail from '@/pages/FarmerDetail';
 import AddAgent from '@/pages/AddAgent';
 import Responses from '@/pages/Responses';
 import ResponseDetail from '@/pages/ResponseDetail';
@@ -88,6 +89,14 @@ function App() {
           element={
             <ProtectedLayout>
               <Farmers />
+            </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.FARMER_DETAIL}
+          element={
+            <ProtectedLayout>
+              <FarmerDetail />
             </ProtectedLayout>
           }
         />

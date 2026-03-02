@@ -77,6 +77,98 @@ export interface FarmerListResponse {
   hasPrevPage: boolean;
 }
 
+type UnknownRecord = Record<string, unknown>;
+
+const readValue = (source: UnknownRecord, keys: string[]): unknown => {
+  for (const key of keys) {
+    const value = source[key];
+    if (value !== undefined && value !== null && value !== '') {
+      return value;
+    }
+  }
+  return undefined;
+};
+
+const asText = (value: unknown, fallback = 'N/A'): string => {
+  if (value === undefined || value === null || value === '') {
+    return fallback;
+  }
+  return String(value);
+};
+
+const asNumber = (value: unknown, fallback = 0): number => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value.replace(/[^\d.-]/g, ''));
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return fallback;
+};
+
+const toArray = <T = unknown>(value: unknown): T[] => {
+  if (Array.isArray(value)) {
+    return value as T[];
+  }
+  return [];
+};
+
+export interface FarmerDetailAgent {
+  id?: string;
+  name: string;
+  phone: string;
+  location: string;
+  photo?: string;
+}
+
+export interface FarmerDetailHarvest {
+  id: string;
+  name: string;
+  cropType: string;
+  quantity: string;
+  harvestDate: string;
+}
+
+export interface FarmerDetail {
+  id: string;
+  farmerId: string;
+  name: string;
+  photo?: string;
+  onboardDate: string;
+  creditScore: string;
+  creditCategory: string;
+  accountCode: string;
+  location: string;
+  contact: string;
+  email: string;
+  gps: string;
+  age: string;
+  gender: string;
+  wife: string;
+  children: string;
+  smartphone: string;
+  distributionMethod: string;
+  farmingType: string;
+  preRetailer: string;
+  idType: string;
+  insurance: string;
+  irrigation: string;
+  cropsLivestock: string;
+  inputs: string;
+  preProduction: string;
+  farmSize: string;
+  previousChemicals: string;
+  previousCosts: string;
+  farmingExperience: string;
+  challenges: string;
+  agent?: FarmerDetailAgent;
+  harvests: FarmerDetailHarvest[];
+  cropDeposits: FarmerDetailHarvest[];
+}
+
 export const farmerService = {
   getFarmers: async (params?: {
     page?: number;
@@ -110,5 +202,102 @@ export const farmerService = {
       hasNextPage: !!data.hasNextPage,
       hasPrevPage: !!data.hasPrevPage,
     };
+  },
+
+  getFarmerById: async (id: string): Promise<FarmerDetail> => {
+    const response = await api.get(`/farmers/${id}`, {
+      params: { details: true },
+    });
+
+    const farmer = (response.data?.data || {}) as UnknownRecord;
+    const agent = (farmer.agent || farmer.agent_user_id || {}) as UnknownRecord;
+
+    const harvestsSource = toArray<UnknownRecord>(
+      readValue(farmer, ['harvests', 'harvest', 'requests'])
+    );
+    const cropDepositsSource = toArray<UnknownRecord>(
+      readValue(farmer, ['repayments', 'deposits', 'cropDeposits'])
+    );
+
+    const mapHarvestItem = (entry: UnknownRecord, index: number): FarmerDetailHarvest => ({
+      id: asText(readValue(entry, ['_id', 'id']), `${index}`),
+      name: asText(readValue(entry, ['name', 'crop', 'produce', 'title']), 'Produce'),
+      cropType: asText(readValue(entry, ['cropType', 'type', 'category']), 'N/A'),
+      quantity: asText(readValue(entry, ['harvestKg', 'kg', 'quantity', 'amount']), 'N/A'),
+      harvestDate: asText(readValue(entry, ['harvestDate', 'date', 'createdAt']), 'N/A'),
+    });
+
+    const firstName = asText(readValue(farmer, ['firstName']), '').trim();
+    const lastName = asText(readValue(farmer, ['lastName']), '').trim();
+    const fullName = `${firstName} ${lastName}`.trim();
+
+    const creditScoreValue = readValue(farmer, ['creditScore', 'riskScore']);
+    const creditScoreNumber = asNumber(creditScoreValue, 0);
+    const creditCategory =
+      asText(readValue(farmer, ['creditScoreCategory']), '') ||
+      (creditScoreNumber >= 7 ? 'Good' : creditScoreNumber >= 4 ? 'Medium' : 'Low');
+
+    const farmSizeValue = readValue(farmer, ['farmSize', 'FarmSize', 'farm_size', 'farmsize']);
+    const farmSizeUnit = asText(readValue(farmer, ['farmSizeUnit', 'FarmSizeUnit']), '').trim();
+    const farmSizeText = `${asText(farmSizeValue)}${farmSizeUnit ? ` ${farmSizeUnit}` : ''}`;
+
+    const output: FarmerDetail = {
+      id: asText(readValue(farmer, ['_id', 'id']), id),
+      farmerId: asText(readValue(farmer, ['farmerId']), 'Farmer ID'),
+      name: fullName || asText(readValue(farmer, ['name', 'Name']), 'Unknown Farmer'),
+      photo: asText(readValue(farmer, ['photo']), ''),
+      onboardDate: asText(readValue(farmer, ['createdAt', 'start_record']), 'N/A'),
+      creditScore: creditScoreValue !== undefined ? String(creditScoreValue) : 'N/A',
+      creditCategory: creditCategory || 'N/A',
+      accountCode: asText(readValue(farmer, ['uuid', 'farmerId']), '-'),
+      location: asText(readValue(farmer, ['locationName', 'location', 'farmLocationGPS']), 'N/A'),
+      contact: asText(readValue(farmer, ['phone', 'phoneNumber', 'phone_number']), 'N/A'),
+      email: asText(readValue(farmer, ['email', 'username']), '-'),
+      gps: asText(readValue(farmer, ['gps_stamp', 'gps', 'location', 'farmLocationGPS']), '-'),
+      age: asText(readValue(farmer, ['age', 'Age']), 'N/A'),
+      gender: asText(readValue(farmer, ['gender']), 'N/A'),
+      wife: asText(readValue(farmer, ['noOfSpouse']), '-'),
+      children: asText(readValue(farmer, ['noOfChildren']), '-'),
+      smartphone: asText(readValue(farmer, ['smartphone']), 'N/A'),
+      distributionMethod: asText(readValue(farmer, ['market', 'productSoldTo']), 'N/A'),
+      farmingType: asText(readValue(farmer, ['farmingType', 'farmingCrop', 'crop_types']), 'N/A'),
+      preRetailer: asText(readValue(farmer, ['pre_retailer']), '-'),
+      idType: asText(readValue(farmer, ['identification']), '-'),
+      insurance: asText(readValue(farmer, ['insurance']), 'N/A'),
+      irrigation: asText(
+        readValue(farmer, ['utilisezvous_lirrigation__oui_or_non', 'irrigation']),
+        'N/A'
+      ),
+      cropsLivestock: asText(
+        readValue(farmer, ['cropsLivestock', 'produce', 'farmingCrop', 'crop_types']),
+        'N/A'
+      ),
+      inputs: asText(readValue(farmer, ['input', 'inputs', 'seeds']), 'N/A'),
+      preProduction: asText(readValue(farmer, ['production_level', 'productionsize']), 'N/A'),
+      farmSize: farmSizeText.trim(),
+      previousChemicals: asText(
+        readValue(farmer, ['previousChemicals', 'chemicals', 'chemical', 'typeOfChemical']),
+        'N/A'
+      ),
+      previousCosts: asText(readValue(farmer, ['previousCosts', 'cost']), 'N/A'),
+      farmingExperience: asText(readValue(farmer, ['farmingExperience', 'experience']), 'N/A'),
+      challenges: asText(readValue(farmer, ['challenges', 'challenge', 'problem']), 'N/A'),
+      agent: agent && Object.keys(agent).length > 0
+        ? {
+            id: asText(readValue(agent, ['_id', 'id']), ''),
+            name: asText(
+              readValue(agent, ['name']),
+              `${asText(readValue(agent, ['firstName']), '')} ${asText(readValue(agent, ['lastName']), '')}`.trim() || 'N/A'
+            ),
+            phone: asText(readValue(agent, ['phoneNumber', 'phone']), 'N/A'),
+            location: asText(readValue(agent, ['location', 'country']), 'N/A'),
+            photo: asText(readValue(agent, ['photo']), ''),
+          }
+        : undefined,
+      harvests: harvestsSource.map(mapHarvestItem),
+      cropDeposits: cropDepositsSource.map(mapHarvestItem),
+    };
+
+    return output;
   },
 };
