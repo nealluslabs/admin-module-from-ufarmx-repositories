@@ -33,6 +33,9 @@ export interface LoanListItem {
   status: string;
   disbursedAt?: string;
   createdAt?: string;
+  coveragePercent?: number;
+  disbursementReference ?: string;
+  disbursementNote?: string;
 }
 
 export interface LoanListResponse {
