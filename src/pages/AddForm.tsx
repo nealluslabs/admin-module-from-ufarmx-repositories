@@ -26,7 +26,7 @@ export default function AddForm() {
     description: '',
     isPublic: false,
     isFarmerForm: false,
-    fields: [],
+    fields: [], 
     agents: [],
   });
 
