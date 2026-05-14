@@ -18,6 +18,7 @@ import Loans from '@/pages/Loans';
 import LoanDetail from '@/pages/LoanDetail';
 import CreditScoreCalculators from '@/pages/CreditScoreCalculators';
 import AddAgent from '@/pages/AddAgent';
+import Controls from '@/pages/Controls';
 import Responses from '@/pages/Responses';
 import ResponseDetail from '@/pages/ResponseDetail';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -169,6 +170,15 @@ function App() {
             <ProtectedLayout>
               <AddAgent />
             </ProtectedLayout>
+          }
+        />
+        <Route
+          path={ROUTES.CONTROLS}
+          element={
+            <ProtectedLayout>
+              <Controls />
+            </ProtectedLayout>
+         
           }
         />
         <Route
