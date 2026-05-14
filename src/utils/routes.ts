@@ -1,4 +1,5 @@
 export const ROUTES = {
+  CONTROLS: '/controls',
   DASHBOARD: '/dashboard',
   LOGIN: '/login',
   RESET_PASSWORD: '/reset-password',
@@ -18,7 +19,6 @@ export const ROUTES = {
   LOAN_DETAIL: '/loans/:id',
   CREDIT_SCORE_CALCULATORS: '/credit-score-calculators',
   ADD_AGENT: '/agent/create',
-  CONTROLS: '/controls',
   ADMINS: '/admins',
   ADD_ADMIN: '/admin/create',
   MAPS: '/maps',
