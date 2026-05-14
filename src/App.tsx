@@ -176,7 +176,7 @@ function App() {
           path={ROUTES.CONTROLS}
           element={
             <ProtectedLayout>
-              <Controls />
+              <Controls /> 
             </ProtectedLayout>
          
           }
