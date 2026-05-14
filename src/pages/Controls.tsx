@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Form,
-    FormControl,
+   // FormControl,
     FormField,
-    FormItem,
-    FormLabel, 
-    FormMessage
+    //FormItem,
+   // FormLabel, 
+    //FormMessage
 } from '@/components/ui/form';
 import { ROUTES } from '@/utils/routes';
 import toast from 'react-hot-toast';
@@ -23,38 +23,38 @@ import { controlsService } from '@/services/controls.service';
 const numberField = z.coerce.number().min(0, 'Must be a positive number');
 
   
-  const formSchema = z.object({
-    retailers: z.object({
-      threshold: z.object({
-        gold: numberField,
-        silver: numberField,
-        bronze: numberField,
-        restricted: numberField,
-      }),
-      caps: z.object({
-        gold: numberField,
-        silver: numberField,
-        bronze: numberField,
-        restricted: numberField,
-      }),
-      interestRate: numberField,
-    }),
-    farmers: z.object({
-      threshold: z.object({
-        gold: numberField,
-        silver: numberField,
-        bronze: numberField,
-        restricted: numberField,
-      }),
-      caps: z.object({
-        gold: numberField,
-        silver: numberField,
-        bronze: numberField,
-        restricted: numberField,
-      }),
-      interestRate: numberField,
-    }),
-  });
+//  const formSchema = z.object({
+//    retailers: z.object({
+//      threshold: z.object({
+//        gold: numberField,
+//        silver: numberField,
+//        bronze: numberField,
+//        restricted: numberField,
+//      }),
+//      caps: z.object({
+//        gold: numberField,
+//        silver: numberField,
+//        bronze: numberField,
+//        restricted: numberField,
+//      }),
+//      interestRate: numberField,
+//    }),
+//    farmers: z.object({
+//      threshold: z.object({
+//        gold: numberField,
+//        silver: numberField,
+//        bronze: numberField,
+//        restricted: numberField,
+//      }),
+//      caps: z.object({
+//        gold: numberField,
+//        silver: numberField,
+//        bronze: numberField,
+//        restricted: numberField,
+//      }),
+//      interestRate: numberField,
+//    }),
+//  });
 
 
 
@@ -116,7 +116,7 @@ const tierSchema = z.object({
   });
 
 
-type FormValues = z.input<typeof formSchema>;
+//type FormValues = z.input<typeof formSchema>;
 
 export default function Controls() {
     const navigate = useNavigate();
@@ -129,14 +129,17 @@ export default function Controls() {
 
 
     const isEditMode = !!id;
-    const [loading, setLoading] = useState(false);
+    const [_loading, setLoading] = useState(false);
 
-    const defaultTier = { gold: 0, silver: 0, bronze: 0, restricted: 0 };
+  //  const defaultTier = { gold: 0, silver: 0, bronze: 0, restricted: 0 };
 
     const tierForm = useForm({ resolver: zodResolver(tierSchema) });
     //const interestForm = useForm({ resolver: zodResolver(interestSchema) });
     const capsForm = useForm({ resolver: zodResolver(capsSchema) });
     
+
+    type TierFormValues = z.input<typeof tierSchema>;
+    type CapsFormValues = z.input<typeof capsSchema>;
     
     type InterestFormValues = z.input<typeof interestSchema>;
     
@@ -149,21 +152,21 @@ export default function Controls() {
     });
     
 
-    const form = useForm<FormValues>({
-      resolver: zodResolver(formSchema),
-      defaultValues: {
-        retailers: {
-          threshold: defaultTier,
-          caps: defaultTier,
-          interestRate: 0,
-        },
-        farmers: {
-          threshold: defaultTier,
-          caps: defaultTier,
-          interestRate: 0,
-        },
-      },
-    });
+   // const form = useForm<FormValues>({
+   //   resolver: zodResolver(formSchema),
+   //   defaultValues: {
+   //     retailers: {
+   //       threshold: defaultTier,
+   //       caps: defaultTier,
+   //       interestRate: 0,
+   //     },
+   //     farmers: {
+   //       threshold: defaultTier,
+   //       caps: defaultTier,
+   //       interestRate: 0,
+   //     },
+   //   },
+   // });
 
    // useEffect(() => {
    //     if (isEditMode && id) {
@@ -171,29 +174,29 @@ export default function Controls() {
    //     }
    // }, [id, isEditMode]);
 
-    const TierRow = ({ control, name, label }: any) => (
-        <div>
-          <p className="font-medium mb-2">{label}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {['gold', 'silver', 'bronze', 'restricted'].map((tier) => (
-              <FormField
-                key={tier}
-                control={control}
-                name={`${name}.${tier}`}
-                render={({ field }: { field: any }) => (
-                  <FormItem>
-                    <FormLabel className="capitalize">{tier}</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ))}
-          </div>
-        </div>
-      );
+   // const TierRow = ({ control, name, label }: any) => (
+   //     <div>
+   //       <p className="font-medium mb-2">{label}</p>
+   //       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+   //         {['gold', 'silver', 'bronze', 'restricted'].map((tier) => (
+   //           <FormField
+   //             key={tier}
+   //             control={control}
+   //             name={`${name}.${tier}`}
+   //             render={({ field }: { field: any }) => (
+   //               <FormItem>
+   //                 <FormLabel className="capitalize">{tier}</FormLabel>
+   //                 <FormControl>
+   //                   <Input type="number" {...field} />
+   //                 </FormControl>
+   //                 <FormMessage />
+   //               </FormItem>
+   //             )}
+   //           />
+   //         ))}
+   //       </div>
+   //     </div>
+   //   );
 
       const TierInputs = ({ control, name }: any) => (
         <div className="grid grid-cols-4 gap-4">
@@ -287,7 +290,7 @@ export default function Controls() {
     //    }
     //};
 
-    const interestOnSubmit = async (_values: FormValues) => {
+    const interestOnSubmit = async (_values: InterestFormValues) => {
         try {
             setLoading(true);
         
@@ -305,7 +308,7 @@ export default function Controls() {
     };
 
 
-    const tiersOnSubmit = async (_values: FormValues) => {
+    const tiersOnSubmit = async (_values: TierFormValues) => {
         try {
             setLoading(true);
         
@@ -323,7 +326,7 @@ export default function Controls() {
     };
 
 
-    const capsOnSubmit = async (_values: FormValues) => {
+    const capsOnSubmit = async (_values: CapsFormValues) => {
         try {
             setLoading(true);
         
